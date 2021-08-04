@@ -1,6 +1,6 @@
 import { Client } from "pg";
 import { config } from "dotenv";
-import express from "express";
+import express, { text } from "express";
 import cors from "cors";
 
 config(); //Read .env file lines as though they were env vars.
@@ -26,11 +26,42 @@ app.use(cors()) //add CORS support to each following route handler
 const client = new Client(dbConfig);
 client.connect();
 
-app.get("/", async (req, res) => {
-  const dbres = await client.query('select * from categories');
-  res.json(dbres.rows);
+app.get("/pastes", async (req, res) => {
+  const dbres = await client.query('select * from storedpastes ORDER BY time desc');
+  let pastes = res.json(dbres.rows)
+  res.status(200).json({
+    status: "success",
+    data: {
+      pastes
+    }
+  })
 });
 
+app.post("/pastes" , async (req,res) => {
+  const {textbody, title} = req.body
+  if (typeof textbody === "string"){
+    const copiedText = textbody
+    const textTitle = title
+    const queryValues = [copiedText,textTitle]
+    const query = "INSERT into storedpastes(paste_text,paste_title) values($1,$2)"
+    const newPaste = await client.query(query,queryValues)
+    const pasteResult = newPaste.rows
+    res.status(201).json({
+      status: "success",
+      data:{
+        message: `Added "${title} : ${textbody}" to pastebin`
+      }
+    })
+  }
+  else {
+    res.status(400).json({
+      status: "fail",
+      data: {
+        name: "A string value for name is required in your JSON body",
+      },
+    });
+  }
+})
 
 //Start the server on the given port
 const port = process.env.PORT;
