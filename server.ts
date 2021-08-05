@@ -57,7 +57,7 @@ app.post("/pastes" , async (req,res) => {
     res.status(400).json({
       status: "fail",
       data: {
-        name: "A string value for name is required in your JSON body",
+        name: "A string value is required",
       },
     });
   }
