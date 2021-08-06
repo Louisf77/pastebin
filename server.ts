@@ -27,7 +27,7 @@ const client = new Client(dbConfig);
 client.connect();
 
 app.get("/pastes", async (req, res) => {
-  const dbres = await client.query('select * from storedpastes ORDER BY time desc');
+  const dbres = await client.query('select * from storedpastes ORDER BY time desc ');
   let pastes = dbres.rows
   res.status(200).json({
     status: "success",
