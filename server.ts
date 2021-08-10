@@ -63,6 +63,51 @@ app.post("/pastes" , async (req,res) => {
   }
 })
 
+
+
+//add comments
+app.post("/pastes/comments",async (req,res) => {
+  const{comment,paste_id} = req.body
+  let queryValues = [comment,paste_id]
+  let query = "INSERT into comments(comment,paste_id) values($1,$2) returning *"
+  try {
+    let commentPost = await client.query(query,queryValues)
+    res.status(201).json({
+      status: "success",
+      data:{
+        message: `Added "${comment} for paste ${paste_id}" to pastebin`
+      }
+    })
+  } catch (error) {
+    console.error(error.message)
+      res.status(400).json({
+        status: "fail",
+    })
+  }
+})
+
+//view comments
+
+app.get("/pastes/comments/:pasteID",async (req,res) => {
+  let pasteID = req.params.pasteID
+  const queryValues = [pasteID]
+  const query = "SELECT comment,comment_id from comments JOIN storedpastes on storedpastes.paste_id = comments.paste_id WHERE comments.paste_id = $1"
+  try {
+    const viewComments = await client.query(query,queryValues)
+    const comments = viewComments.rows
+    res.status(200).json({
+      status: "success",
+      data: {
+        comments
+      }
+    })
+  } catch (error) {
+    console.error(error.message)
+  }
+})
+
+//Delete comments
+
 //Start the server on the given port
 const port = process.env.PORT;
 if (!port) {
